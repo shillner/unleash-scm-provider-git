@@ -12,6 +12,7 @@ import com.jcraft.jsch.agentproxy.AgentProxyException;
 import com.jcraft.jsch.agentproxy.Connector;
 import com.jcraft.jsch.agentproxy.RemoteIdentityRepository;
 import com.jcraft.jsch.agentproxy.USocketFactory;
+import com.jcraft.jsch.agentproxy.connector.PageantConnector;
 import com.jcraft.jsch.agentproxy.connector.SSHAgentConnector;
 import com.jcraft.jsch.agentproxy.usocket.JNAUSocketFactory;
 
@@ -20,6 +21,8 @@ import org.eclipse.jgit.transport.OpenSshConfig.Host;
 import org.eclipse.jgit.util.FS;
 
 class GitSshSessionFactory extends JschConfigSessionFactory {
+
+    private static final String OS = System.getProperty("os.name").toLowerCase();
 
     static final String PREFERRED_AUTHENTICATIONS = "PreferredAuthentications";
     static final String PUBLIC_KEY = "publickey";
@@ -50,7 +53,7 @@ class GitSshSessionFactory extends JschConfigSessionFactory {
                 defaultJSch.addIdentity(itentityName.toString(), passphrase);
             }
         } else {
-            Connector sshAgentConnector = getAgentConnector();
+            Connector sshAgentConnector =  getAgentConnector();
             if (sshAgentConnector != null) {
                 JSch.setConfig(PREFERRED_AUTHENTICATIONS, PUBLIC_KEY);
 
@@ -70,15 +73,22 @@ class GitSshSessionFactory extends JschConfigSessionFactory {
     private Connector getAgentConnector() {
         Connector connector = null;
 
-        try {
-            if (isConnectorAvailable()) {
-                USocketFactory usf = new JNAUSocketFactory();
-                connector = new SSHAgentConnector(usf);
+        if (isConnectorAvailable()) {
+            try {
+                connector = (OS.indexOf("win") >= 0) ? getWindowsConnector() : getUnixAgentConnector();
+            } catch (AgentProxyException e) {
+                logger.warning("failed to create connector to ssh agent: " + e.getMessage());
             }
-        } catch (AgentProxyException e) {
-            logger.warning("failed to create connector to ssh agent: " + e.getMessage());
         }
 
         return connector;
+    }
+
+    private Connector getWindowsConnector() throws AgentProxyException {
+        return new PageantConnector();
+    }
+
+    private Connector getUnixAgentConnector() throws AgentProxyException {
+        return new SSHAgentConnector(new JNAUSocketFactory());
     }
 }

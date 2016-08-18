@@ -65,12 +65,17 @@
     </dependency>
     <dependency>
       <groupId>com.jcraft</groupId>
-      <artifactId>jsch.agentproxy.usocket-jna</artifactId>
+      <artifactId>jsch.agentproxy.pageant</artifactId>
       <version>${version.jsch-agentproxy}</version>
     </dependency>
     <dependency>
       <groupId>com.jcraft</groupId>
       <artifactId>jsch.agentproxy.sshagent</artifactId>
+      <version>${version.jsch-agentproxy}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.jcraft</groupId>
+      <artifactId>jsch.agentproxy.usocket-jna</artifactId>
       <version>${version.jsch-agentproxy}</version>
     </dependency>
     <dependency>

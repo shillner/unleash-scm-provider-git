@@ -1034,6 +1034,10 @@ public class ScmProviderGit implements ScmProvider {
         logCommand.setMaxCount((int) request.getMaxResults());
       }
 
+      for (String path : request.getPathFilters()) {
+        logCommand.addPath(path);
+      }
+
       AnyObjectId startId = getTagRevisionOrDefault(request.getStartTag(), request.getStartRevision().orNull());
       AnyObjectId endId = getTagRevisionOrDefault(request.getEndTag(),
           request.getEndRevision().or(this.git.getRepository().resolve("HEAD").name()));
